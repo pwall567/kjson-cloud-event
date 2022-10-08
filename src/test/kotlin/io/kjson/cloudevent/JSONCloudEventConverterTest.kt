@@ -29,10 +29,12 @@ import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.expect
 import kotlin.test.fail
+
 import java.net.URI
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
+
 import io.kjson.JSONConfig
 import io.kjson.cloudevent.JSONCloudEventConverter.addCloudEventExtFromJSON
 import io.kjson.cloudevent.JSONCloudEventConverter.addCloudEventExtToJSON
@@ -81,6 +83,43 @@ class JSONCloudEventConverterTest {
         }
     }
 
+    @Test fun `should serialize CloudEventExt using map for extensions`() {
+        val id = UUID.fromString("274132d8-f2e2-11ec-9897-6f1fa956d500")
+        val source = URI("https://kjson.io/test2")
+        val type = "test1"
+        val subject = "ABC"
+        val time = OffsetDateTime.of(2022, 6, 23, 22, 21, 27, 456_000_000, ZoneOffset.ofHours(10))
+        val accountId = UUID.fromString("a0dfa09a-f2ef-11ec-80fc-137c580906c5")
+        val accountName = "Test Account"
+        val event = CloudEventExt(
+            id = id,
+            source = source,
+            type = type,
+            subject = subject,
+            time = time,
+            data = AccountOpen(accountId, accountName),
+            extension = mapOf("value1" to "Horse", "value2" to "Zebra"),
+        )
+        val config = JSONConfig {
+            addCloudEventExtToJSON<AccountOpen, Map<String, String>>()
+        }
+        expectJSON(event.stringifyJSON(config)) {
+            property("id", id)
+            property("source", source.toString())
+            property("specversion", "1.0")
+            property("type", type)
+            property("datacontenttype", "application/json")
+            property("subject", subject)
+            property("time", time)
+            property("value1", "Horse")
+            property("value2", "Zebra")
+            property("data") {
+                property("accountId", accountId)
+                property("name", accountName)
+            }
+        }
+    }
+
     @Test fun `should deserialize CloudEventExt`() {
         val id: UUID = UUID.fromString("274132d8-f2e2-11ec-9897-6f1fa956d500")
         val source = URI("https://kjson.io/test")
@@ -115,6 +154,48 @@ class JSONCloudEventConverterTest {
             with(this.extension) {
                 expect(ext1) { this.ext1 }
                 expect(ext2) { this.ext2 }
+            }
+            with(this.data) {
+                assertNotNull(this)
+                expect(accountId) { this.accountId }
+                expect(accountName) { this.name }
+            }
+        }
+    }
+
+    @Test fun `should deserialize CloudEventExt using map for extensions`() {
+        val id: UUID = UUID.fromString("274132d8-f2e2-11ec-9897-6f1fa956d500")
+        val source = URI("https://kjson.io/test2")
+        val type = "test1"
+        val subject = "ABC"
+        val time = OffsetDateTime.of(2022, 6, 23, 22, 21, 27, 456_000_000, ZoneOffset.ofHours(10))
+        val accountId: UUID = UUID.fromString("a0dfa09a-f2ef-11ec-80fc-137c580906c5")
+        val accountName = "Test Account"
+        val event = CloudEventExt(
+            id = id,
+            source = source,
+            type = type,
+            subject = subject,
+            time = time,
+            data = AccountOpen(accountId, accountName),
+            extension = mapOf("value1" to "Horse", "value2" to "Zebra"),
+        )
+        val config = JSONConfig {
+            addCloudEventExtToJSON<AccountOpen, Map<String, String>>()
+            addCloudEventExtFromJSON<AccountOpen, Map<String, String>>()
+        }
+        val serialised = event.stringifyJSON(config)
+        val deserialised: CloudEventExt<AccountOpen, Map<String, String>> = serialised.parseJSON(config) ?: fail()
+        with(deserialised) {
+            expect(id) { this.id }
+            expect(source) { this.source }
+            expect(type) { this.type }
+            expect(subject) { this.subject }
+            expect(time) { this.time }
+            with(this.extension) {
+                expect(2) { this.size }
+                expect("Horse") { this["value1"] }
+                expect("Zebra") { this["value2"] }
             }
             with(this.data) {
                 assertNotNull(this)

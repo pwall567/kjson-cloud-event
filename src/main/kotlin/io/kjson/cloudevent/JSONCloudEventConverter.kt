@@ -29,14 +29,13 @@ import java.net.URI
 import java.time.OffsetDateTime
 import java.util.UUID
 
-import io.kjson.JSON.asObject
 import io.kjson.JSON.asString
 import io.kjson.JSONConfig
 import io.kjson.JSONException
 import io.kjson.JSONObject
 import io.kjson.JSONSerializer
-import io.kjson.JSONValue
 import io.kjson.fromJSONValue
+import io.kjson.fromJSONValueNullable
 
 /**
  * Custom serialization and deserialization functions for the [CloudEventExt] class, using the `kjson` library.
@@ -52,26 +51,25 @@ object JSONCloudEventConverter {
     val standardAttributes = setOf("id", "source", "specversion", "type", "datacontenttype", "dataschema", "subject",
             "time", "data", "data_base64")
 
-    inline fun <reified T : Any, reified E : Any> JSONConfig.cloudEventExtFromJSON(json: JSONValue?):
-            CloudEventExt<T, E>? = json?.let {
-        val jsonObject = json.asObject
+    inline fun <reified T : Any, reified E : Any> JSONConfig.cloudEventExtFromJSON(json: JSONObject):
+            CloudEventExt<T, E> {
         val extObject = JSONObject.build {
-            for (entry in jsonObject.entries)
-                if (entry.key !in standardAttributes)
-                    add(entry.key, entry.value)
+            for ((key, value) in json.entries)
+                if (key !in standardAttributes)
+                    add(key, value)
         }
-        CloudEventExt(
-            id = UUID.fromString(jsonObject["id"].asString),
-            source = URI(jsonObject["source"].asString),
-            specversion = jsonObject["specversion"].asString,
-            type = jsonObject["type"].asString,
-            datacontenttype = jsonObject["datacontenttype"]?.asString,
-            dataschema = jsonObject["dataschema"]?.asString?.let { URI(it) },
-            subject = jsonObject["subject"]?.asString,
-            time = jsonObject["time"]?.asString?.let { OffsetDateTime.parse(it) },
+        return CloudEventExt(
+            id = UUID.fromString(json["id"].asString),
+            source = URI(json["source"].asString),
+            specversion = json["specversion"].asString,
+            type = json["type"].asString,
+            datacontenttype = json["datacontenttype"]?.asString,
+            dataschema = json["dataschema"]?.asString?.let { URI(it) },
+            subject = json["subject"]?.asString,
+            time = json["time"]?.asString?.let { OffsetDateTime.parse(it) },
             extension = extObject.fromJSONValue(this),
-            data = jsonObject["data"]?.fromJSONValue(this),
-            data_base64 = jsonObject["data_base64"]?.asString,
+            data = json["data"]?.fromJSONValueNullable(this),
+            data_base64 = json["data_base64"]?.asString,
         )
     }
 
@@ -97,7 +95,7 @@ object JSONCloudEventConverter {
     }
 
     inline fun <reified T : Any, reified E : Any> JSONConfig.addCloudEventExtFromJSON() {
-        fromJSON<CloudEventExt<T, E>> {
+        fromJSONObject<CloudEventExt<T, E>> {
             cloudEventExtFromJSON(it)
         }
     }

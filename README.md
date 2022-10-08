@@ -14,21 +14,24 @@ passed between processes.
 The `kjson-cloud-event` library provides a simple implementation of the CloudEvents structure in Kotlin.
 
 Many uses (possibly the vast majority of uses) of CloudEvents will use JSON as the external representation of the event.
-Events created using this library may be serialized into JSON, and deserialized back into their internal form, using
-the [`kjson`](https://github.com/pwall567/kjson) library, and probably by most other JSON libraries.
+The [specification](https://github.com/cloudevents/spec/blob/main/cloudevents/spec.md) sets out how events are to be
+serialized, and in most cases, any general-purpose JSON library should be able to convert the events correctly. 
 
-The only problems arise with the use of Extension Context Attributes.
+The only problems arise with the use of
+[Extension Context Attributes](https://github.com/cloudevents/spec/blob/main/cloudevents/spec.md#extension-context-attributes).
 The CloudEvents specification requires such attributes to be included in the JSON envelope of the event, and that means
-that the JSON library must be provided with custom serialization and deserialization configuration to handle these
-events.
+that the JSON library must be provided with custom serialization and deserialization configuration in order to handle
+these events.
 
-The `kotlin-cloud-event` library provides two implementations of the CloudEvents specification:
+The `kjson-cloud-event` library was created with the [`kjson`](https://github.com/pwall567/kjson) library in mind, but
+the event classes from this library should also be usable in conjunction with any of the other popular JSON libraries.
+The library provides two implementations of the CloudEvents specification:
 
 - [`CloudEvent`](#cloudevent): this handles the simple case without Extension Context Attributes, and events using this
 class may be serialized and deserialized without additional configuration.
 - [`CloudEventExt`](#cloudeventext): this allows Extension Context Attributes, but this requires custom serialization
 and deserialization to be used.
-The library includes functions to perform this custom serialization and deserialization using the `kjson` library.
+The library includes functions to perform this custom serialization and deserialization when using `kjson`.
 
 ## `CloudEvent`
 
@@ -54,8 +57,8 @@ will create an object of type `CloudEvent<AccountOpen>`.
 Cloud Events that use Extension Context Attributes can use the data class `CloudEventExt`.
 This is a generic class, parameterized with both the type of the data payload, and the type of the extensions object.
 
-As an example, suppose that two addition Extension Context Attributes were required: a security principal id in the form
-of a UUID, and a token in the form of an opaque string.
+As an example, suppose that two additional Extension Context Attributes were required: a security principal id in the
+form of a UUID, and a token in the form of an opaque string.
 To hold these attributes, a data class may be defined:
 ```kotlin
 data class Extension(val principalId: UUID, val token: String)
@@ -76,6 +79,24 @@ Then, a `CloudEventExt` instance may be created as follows:
 ```
 This will create an object of type `CloudEventExt<AccountOpen, Extension>`, and when serialized with the appropriate
 configuration, the `principalId` and `token` attributes will appear in the envelope of the event.
+
+Alternatively, a `Map` may be used to hold the Extension Context Attributes.
+The following example creates a `CloudEventExt` with the same external representation as the above:
+```kotlin
+    val accountOpen = AccountOpen(accountId = newAccountId, name = customerName)
+    val cloudEvent = CloudEventExt(
+        id = UUID.randomUUID(),
+        source = eventSource,
+        type = "com.example.accounts.open",
+        subject = accountOpen.accountId,
+        time = OffsetDateTime.now(),
+        extension = mapOf("principalId" to currentPrincipal.toString(), "token" to token1),
+        data = accountOpen,
+    )
+```
+The object type in this case will be `CloudEventExt<AccountOpen, Map<String, String>>` (the key of the map must be of
+type `String`; the value may be of any type, but if mixed types are used, the deserialization functions will not have
+sufficient information to determine the target type of, say, a `UUID`).
 
 ## Serialization and Deserialization
 
@@ -100,25 +121,25 @@ Other JSON libraries will probably have similar functionality, but that is outsi
 
 ## Dependency Specification
 
-The latest version of the library is 1.0, and it may be obtained from the Maven Central repository.
+The latest version of the library is 1.1, and it may be obtained from the Maven Central repository.
 
 ### Maven
 ```xml
     <dependency>
       <groupId>io.kjson</groupId>
       <artifactId>kjson-cloud-event</artifactId>
-      <version>1.0</version>
+      <version>1.1</version>
     </dependency>
 ```
 ### Gradle
 ```groovy
-    implementation 'io.kjson:kjson-cloud-event:1.0'
+    implementation 'io.kjson:kjson-cloud-event:1.1'
 ```
 ### Gradle (kts)
 ```kotlin
-    implementation("io.kjson:kjson-cloud-event:1.0")
+    implementation("io.kjson:kjson-cloud-event:1.1")
 ```
 
 Peter Wall
 
-2022-06-24
+2022-10-09
