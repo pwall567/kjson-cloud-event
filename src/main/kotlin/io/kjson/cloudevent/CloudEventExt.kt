@@ -34,7 +34,7 @@ import java.util.UUID
  *
  * @author  Peter Wall
  * @param   T       the payload data type
- * @param   E       the payload data type
+ * @param   E       the extension object data type
  */
 data class CloudEventExt<T : Any, E : Any>(
     val id: UUID,

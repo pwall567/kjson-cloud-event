@@ -117,7 +117,14 @@ objects:
     val event = data.parseJSON<CloudEventExt<AccountOpen, Extension>>(config)
 ```
 
-Other JSON libraries will probably have similar functionality, but that is outside the scope of these notes.
+The custom deserialization may be combined with [`kjson`](https://github.com/pwall567/kjson) polymorphic
+deserialization of the cloud event payload.
+See the
+[`kjson` Custom Serialization and Deserialization Guide](https://github.com/pwall567/kjson/blob/main/CUSTOM.md#fromjsonpolymorphic)
+for more information.
+
+Other JSON libraries will probably have similar functionality; consult the documentation for the library for further
+information.
 
 ## Dependency Specification
 
