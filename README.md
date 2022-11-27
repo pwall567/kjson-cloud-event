@@ -128,25 +128,25 @@ information.
 
 ## Dependency Specification
 
-The latest version of the library is 1.1, and it may be obtained from the Maven Central repository.
+The latest version of the library is 1.3, and it may be obtained from the Maven Central repository.
 
 ### Maven
 ```xml
     <dependency>
       <groupId>io.kjson</groupId>
       <artifactId>kjson-cloud-event</artifactId>
-      <version>1.1</version>
+      <version>1.3</version>
     </dependency>
 ```
 ### Gradle
 ```groovy
-    implementation 'io.kjson:kjson-cloud-event:1.1'
+    implementation 'io.kjson:kjson-cloud-event:1.3'
 ```
 ### Gradle (kts)
 ```kotlin
-    implementation("io.kjson:kjson-cloud-event:1.1")
+    implementation("io.kjson:kjson-cloud-event:1.3")
 ```
 
 Peter Wall
 
-2022-10-09
+2022-11-27
