@@ -2,7 +2,7 @@
  * @(#) JSONCloudEventConverter.kt
  *
  * kjson-cloud-event  Kotlin implementation of CloudEvents specification (v1)
- * Copyright (c) 2022 Peter Wall
+ * Copyright (c) 2022, 2023 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,6 @@ import io.kjson.JSONException
 import io.kjson.JSONObject
 import io.kjson.JSONSerializer
 import io.kjson.fromJSONValue
-import io.kjson.fromJSONValueNullable
 
 /**
  * Custom serialization and deserialization functions for the [CloudEventExt] class, using the `kjson` library.
@@ -68,7 +67,7 @@ object JSONCloudEventConverter {
             subject = json["subject"]?.asString,
             time = json["time"]?.asString?.let { OffsetDateTime.parse(it) },
             extension = extObject.fromJSONValue(this),
-            data = json["data"]?.fromJSONValueNullable(this),
+            data = json["data"]?.fromJSONValue(this),
             data_base64 = json["data_base64"]?.asString,
         )
     }
