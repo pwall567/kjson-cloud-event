@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/pwall567/kjson-cloud-event.svg?branch=main)](https://app.travis-ci.com/github/pwall567/kjson-cloud-event)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Kotlin](https://img.shields.io/static/v1?label=Kotlin&message=v1.7.21&color=7f52ff&logo=kotlin&logoColor=7f52ff)](https://github.com/JetBrains/kotlin/releases/tag/v1.7.21)
+[![Kotlin](https://img.shields.io/static/v1?label=Kotlin&message=v1.8.22&color=7f52ff&logo=kotlin&logoColor=7f52ff)](https://github.com/JetBrains/kotlin/releases/tag/v1.8.22)
 [![Maven Central](https://img.shields.io/maven-central/v/io.kjson/kjson-cloud-event?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.kjson%22%20AND%20a:%22kjson-cloud-event%22)
 
 Kotlin implementation of CloudEvents specification (v1)
@@ -128,25 +128,28 @@ information.
 
 ## Dependency Specification
 
-The latest version of the library is 1.8, and it may be obtained from the Maven Central repository.
+The latest version of the library is 1.9, and it may be obtained from the Maven Central repository.
+
+**IMPORTANT:** The `JSONCloudEventConverter` class (custom serialization of the `CloudEventExt` class for `kjson`) in
+this version of the library requires `kjson` version 7.1 or greater.
 
 ### Maven
 ```xml
     <dependency>
       <groupId>io.kjson</groupId>
       <artifactId>kjson-cloud-event</artifactId>
-      <version>1.8</version>
+      <version>1.9</version>
     </dependency>
 ```
 ### Gradle
 ```groovy
-    implementation 'io.kjson:kjson-cloud-event:1.8'
+    implementation 'io.kjson:kjson-cloud-event:1.9'
 ```
 ### Gradle (kts)
 ```kotlin
-    implementation("io.kjson:kjson-cloud-event:1.8")
+    implementation("io.kjson:kjson-cloud-event:1.9")
 ```
 
 Peter Wall
 
-2023-07-11
+2023-10-15

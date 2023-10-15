@@ -2,7 +2,7 @@
  * @(#) JSONCloudEventConverterTest.kt
  *
  * kjson-cloud-event  Kotlin implementation of CloudEvents specification (v1)
- * Copyright (c) 2022 Peter Wall
+ * Copyright (c) 2022, 2023 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@
 package io.kjson.cloudevent
 
 import kotlin.test.Test
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.expect
 import kotlin.test.fail
@@ -36,9 +37,11 @@ import java.time.ZoneOffset
 import java.util.UUID
 
 import io.kjson.JSONConfig
+import io.kjson.JSONKotlinException
 import io.kjson.cloudevent.JSONCloudEventConverter.addCloudEventExtFromJSON
 import io.kjson.cloudevent.JSONCloudEventConverter.addCloudEventExtToJSON
 import io.kjson.parseJSON
+import io.kjson.pointer.JSONPointer
 import io.kjson.stringifyJSON
 import io.kjson.test.JSONExpect.Companion.expectJSON
 
@@ -104,18 +107,20 @@ class JSONCloudEventConverterTest {
             addCloudEventExtToJSON<AccountOpen, Map<String, String>>()
         }
         expectJSON(event.stringifyJSON(config)) {
-            property("id", id)
-            property("source", source.toString())
-            property("specversion", "1.0")
-            property("type", type)
-            property("datacontenttype", "application/json")
-            property("subject", subject)
-            property("time", time)
-            property("value1", "Horse")
-            property("value2", "Zebra")
-            property("data") {
-                property("accountId", accountId)
-                property("name", accountName)
+            exhaustive {
+                property("id", id)
+                property("source", source.toString())
+                property("specversion", "1.0")
+                property("type", type)
+                property("datacontenttype", "application/json")
+                property("subject", subject)
+                property("time", time)
+                property("value1", "Horse")
+                property("value2", "Zebra")
+                property("data") {
+                    property("accountId", accountId)
+                    property("name", accountName)
+                }
             }
         }
     }
@@ -202,6 +207,36 @@ class JSONCloudEventConverterTest {
                 expect(accountId) { this.accountId }
                 expect(accountName) { this.name }
             }
+        }
+    }
+
+    @Test fun `should report error correctly when deserializing CloudEventExt`() {
+        val id: UUID = UUID.fromString("274132d8-f2e2-11ec-9897-6f1fa956d500")
+        val source = URI("https://kjson.io/test")
+        val type = "test1"
+        val subject = "ABC"
+        val time = OffsetDateTime.of(2022, 6, 23, 22, 21, 27, 456_000_000, ZoneOffset.ofHours(10))
+        val ext1 = "Fred"
+        val ext2: UUID = UUID.fromString("88adcea0-f2e2-11ec-abd8-cb487f52b4aa")
+        val event = CloudEventExt(
+            id = id,
+            source = source,
+            type = type,
+            subject = subject,
+            time = time,
+            data = mapOf("accountId" to "123456789", "name" to "Test Account"),
+            extension = Extension1(ext1, ext2),
+        )
+        val config = JSONConfig {
+            addCloudEventExtToJSON<Map<String, String>, Extension1>()
+            addCloudEventExtFromJSON<AccountOpen, Extension1>()
+        }
+        val serialised = event.stringifyJSON(config)
+        assertFailsWith<JSONKotlinException> {
+            serialised.parseJSON<CloudEventExt<AccountOpen, Extension1>>(config)
+        }.let {
+            expect("Error deserializing \"123456789\" as java.util.UUID at /data/accountId") { it.message }
+            expect(JSONPointer("/data/accountId")) { it.pointer }
         }
     }
 

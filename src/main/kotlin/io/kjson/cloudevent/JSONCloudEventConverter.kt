@@ -25,16 +25,10 @@
 
 package io.kjson.cloudevent
 
-import java.net.URI
-import java.time.OffsetDateTime
-import java.util.UUID
-
-import io.kjson.JSON.asString
 import io.kjson.JSONConfig
-import io.kjson.JSONException
+import io.kjson.JSONContext
+import io.kjson.JSONKotlinException
 import io.kjson.JSONObject
-import io.kjson.JSONSerializer
-import io.kjson.fromJSONValue
 
 /**
  * Custom serialization and deserialization functions for the [CloudEventExt] class, using the `kjson` library.
@@ -50,7 +44,7 @@ object JSONCloudEventConverter {
     val standardAttributes = setOf("id", "source", "specversion", "type", "datacontenttype", "dataschema", "subject",
             "time", "data", "data_base64")
 
-    inline fun <reified T : Any, reified E : Any> JSONConfig.cloudEventExtFromJSON(json: JSONObject):
+    inline fun <reified T : Any, reified E : Any> JSONContext.cloudEventExtFromJSON(json: JSONObject):
             CloudEventExt<T, E> {
         val extObject = JSONObject.build {
             for ((key, value) in json.entries)
@@ -58,38 +52,38 @@ object JSONCloudEventConverter {
                     add(key, value)
         }
         return CloudEventExt(
-            id = UUID.fromString(json["id"].asString),
-            source = URI(json["source"].asString),
-            specversion = json["specversion"].asString,
-            type = json["type"].asString,
-            datacontenttype = json["datacontenttype"]?.asString,
-            dataschema = json["dataschema"]?.asString?.let { URI(it) },
-            subject = json["subject"]?.asString,
-            time = json["time"]?.asString?.let { OffsetDateTime.parse(it) },
-            extension = extObject.fromJSONValue(this),
-            data = json["data"]?.fromJSONValue(this),
-            data_base64 = json["data_base64"]?.asString,
+            id = deserializeProperty("id", json),
+            source = deserializeProperty("source", json),
+            specversion = deserializeProperty("specversion", json),
+            type = deserializeProperty("type", json),
+            datacontenttype = deserializeProperty("datacontenttype", json),
+            dataschema = deserializeProperty("dataschema", json),
+            subject = deserializeProperty("subject", json),
+            time = deserializeProperty("time", json),
+            extension = deserialize(extObject),
+            data = deserializeProperty("data", json),
+            data_base64 = deserializeProperty("data_base64", json),
         )
     }
 
-    inline fun <reified T : Any, reified E : Any> JSONConfig.cloudEventExtToJSON(event: CloudEventExt<T, E>?):
-            JSONObject? = event?.let {
+    @Suppress("MemberVisibilityCanBePrivate")
+    fun <T : Any, E : Any> JSONContext.cloudEventExtToJSON(event: CloudEventExt<T, E>?): JSONObject? = event?.let {
         JSONObject.build {
-            add("id", event.id.toString())
-            add("source", event.source.toString())
-            add("specversion", event.specversion)
-            add("type", event.type)
-            event.datacontenttype?.let { add("datacontenttype", it) }
-            event.dataschema?.let { add("dataschema", it.toString()) }
-            event.subject?.let { add("subject", it) }
-            event.time?.let { add("time", it.toString()) }
-            val extObject = JSONSerializer.serialize(event.extension, this@cloudEventExtToJSON)
+            addProperty("id", event.id)
+            addProperty("source", event.source)
+            addProperty("specversion", event.specversion)
+            addProperty("type", event.type)
+            addProperty("datacontenttype", event.datacontenttype)
+            addProperty("dataschema", event.dataschema)
+            addProperty("subject", event.subject)
+            addProperty("time", event.time)
+            val extObject = serialize(event.extension)
             if (extObject !is JSONObject)
-                throw JSONException("Extension must serialize to an object")
+                throw JSONKotlinException("Extension must serialize to an object", pointer)
             for (entry in extObject.entries)
                 add(entry.key, entry.value)
-            event.data?.let { add("data", JSONSerializer.serialize(it, this@cloudEventExtToJSON)) }
-            event.data_base64?.let { add("data_base64", it) }
+            addProperty("data", event.data)
+            addProperty("data_base64", event.data_base64)
         }
     }
 
@@ -99,7 +93,7 @@ object JSONCloudEventConverter {
         }
     }
 
-    inline fun <reified T : Any, reified E : Any> JSONConfig.addCloudEventExtToJSON() {
+    fun <T : Any, E : Any> JSONConfig.addCloudEventExtToJSON() {
         toJSON<CloudEventExt<T, E>> {
             cloudEventExtToJSON(it)
         }

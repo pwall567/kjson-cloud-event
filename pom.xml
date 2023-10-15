@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>kjson-cloud-event</artifactId>
-  <version>1.8</version>
+  <version>1.9</version>
   <name>Kotlin CloudEvents</name>
   <description>Kotlin implementation of CloudEvents specification (v1)</description>
   <packaging>jar</packaging>
@@ -13,7 +13,7 @@
   <parent>
     <groupId>io.kjson</groupId>
     <artifactId>kjson-maven</artifactId>
-    <version>3.1</version>
+    <version>4.0</version>
   </parent>
 
   <properties>
@@ -67,19 +67,19 @@
     <dependency>
       <groupId>io.kjson</groupId>
       <artifactId>kjson</artifactId>
-      <version>6.0</version>
+      <version>7.1</version>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.kjson</groupId>
       <artifactId>kjson-core</artifactId>
-      <version>5.7</version>
+      <version>5.10</version>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.kjson</groupId>
       <artifactId>kjson-test</artifactId>
-      <version>3.7</version>
+      <version>3.10</version>
       <scope>test</scope>
     </dependency>
     <dependency>
