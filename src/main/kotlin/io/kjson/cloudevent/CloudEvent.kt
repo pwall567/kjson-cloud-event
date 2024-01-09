@@ -2,7 +2,7 @@
  * @(#) CloudEvent.kt
  *
  * kjson-cloud-event  Kotlin implementation of CloudEvents specification (v1)
- * Copyright (c) 2022 Peter Wall
+ * Copyright (c) 2022, 2024 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@ import java.util.UUID
  * @author  Peter Wall
  * @param   T       the payload data type
  */
-data class CloudEvent<T : Any>(
+data class CloudEvent<out T : Any>(
     val id: UUID,
     val source: URI,
     val specversion: String = "1.0",

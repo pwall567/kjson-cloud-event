@@ -2,7 +2,7 @@
  * @(#) JSONCloudEventConverterTest.kt
  *
  * kjson-cloud-event  Kotlin implementation of CloudEvents specification (v1)
- * Copyright (c) 2022, 2023 Peter Wall
+ * Copyright (c) 2022, 2023, 2024 Peter Wall
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -86,7 +86,7 @@ class JSONCloudEventConverterTest {
         }
     }
 
-    @Test fun `should serialize CloudEventExt using map for extensions`() {
+    @Test fun `should serialize CloudEventExt using map`() {
         val id = UUID.fromString("274132d8-f2e2-11ec-9897-6f1fa956d500")
         val source = URI("https://kjson.io/test2")
         val type = "test1"
@@ -168,7 +168,7 @@ class JSONCloudEventConverterTest {
         }
     }
 
-    @Test fun `should deserialize CloudEventExt using map for extensions`() {
+    @Test fun `should deserialize CloudEventExt using map`() {
         val id: UUID = UUID.fromString("274132d8-f2e2-11ec-9897-6f1fa956d500")
         val source = URI("https://kjson.io/test2")
         val type = "test1"
@@ -210,7 +210,7 @@ class JSONCloudEventConverterTest {
         }
     }
 
-    @Test fun `should report error correctly when deserializing CloudEventExt`() {
+    @Test fun `should report error when deserializing CloudEventExt`() {
         val id: UUID = UUID.fromString("274132d8-f2e2-11ec-9897-6f1fa956d500")
         val source = URI("https://kjson.io/test")
         val type = "test1"
